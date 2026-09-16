@@ -9,6 +9,14 @@ import {
 } from "./github";
 import { ConfirmModal, DeviceCodeModal, RepoPickerModal } from "./ui/modals";
 
+interface AppSettingLike {
+  open(): void;
+  openTabById(id: string): {
+    searchComponent?: { inputEl: HTMLInputElement };
+    updateHotkeyVisibility?: () => void;
+  } | undefined;
+}
+
 const STARTER_GITIGNORE = `# Git Pocket starter
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
@@ -258,14 +266,19 @@ export class GitPocketSettingTab extends PluginSettingTab {
       )
       .addButton((b) =>
         b.setButtonText("Open hotkeys").onClick(() => {
-          const setting = (this.app as unknown as {
-            setting: { open(): void; openTabById(id: string): { searchComponent?: { inputEl: HTMLInputElement }; updateHotkeyVisibility?: () => void } };
-          }).setting;
-          setting.open();
-          const tab = setting.openTabById("hotkeys");
-          if (tab?.searchComponent) {
-            tab.searchComponent.inputEl.value = "Git Pocket";
-            tab.updateHotkeyVisibility?.();
+          // Obsidian exposes no public API for opening a settings tab, so this
+          // reaches a private one and degrades to an instruction if it moves.
+          const setting = (this.app as unknown as { setting?: AppSettingLike }).setting;
+          try {
+            if (!setting?.open || !setting.openTabById) throw new Error("unavailable");
+            setting.open();
+            const tab = setting.openTabById("hotkeys");
+            if (tab?.searchComponent) {
+              tab.searchComponent.inputEl.value = "Git Pocket";
+              tab.updateHotkeyVisibility?.();
+            }
+          } catch {
+            new Notice('Open Settings \u2192 Hotkeys and search for "Git Pocket".', 6000);
           }
         }),
       );
