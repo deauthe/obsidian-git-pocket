@@ -14,7 +14,7 @@ async function collect(body: Body): Promise<ArrayBuffer | undefined> {
     out.set(c, at);
     at += c.byteLength;
   }
-  return out.buffer as ArrayBuffer;
+  return out.buffer;
 }
 
 /**

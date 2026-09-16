@@ -104,6 +104,15 @@ Your token lives in this vault's plugin data, unencrypted — the same place eve
 Obsidian plugin keeps its settings. Use a **fine-grained** token scoped to the one
 repository, so a leaked vault costs you that repo and nothing else.
 
+### Clipboard
+
+The plugin writes to the system clipboard in exactly one place: the device-login
+code dialog, which copies the GitHub user code you're asked to enter on
+github.com. It never reads the clipboard, and the write only happens when you
+tap the code or the "Copy code" button. This dialog only appears if you've set
+up your own OAuth app client ID under Advanced settings — the default sign-in
+flow is pasting a token and never touches the clipboard.
+
 ## Known limits
 
 - No conflict resolution UI. Conflicting merges abort.

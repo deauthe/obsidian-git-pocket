@@ -1,4 +1,4 @@
-import { Notice, Platform, Plugin, addIcon, debounce } from "obsidian";
+import { Notice, Platform, Plugin, debounce } from "obsidian";
 import { DEFAULT_SETTINGS, GitPocketSettings, renderTemplate } from "./settings";
 import { GitPocketSettingTab } from "./settings-tab";
 import { GitService, type CommitRow } from "./git";
@@ -122,14 +122,12 @@ export default class GitPocketPlugin extends Plugin {
     this.addCommand({
       id: "sync",
       name: "Sync (commit, pull, push)",
-      hotkeys: [{ modifiers: ["Mod", "Shift"], key: "S" }],
       callback: () => void this.sync(true),
     });
 
     this.addCommand({
       id: "commit",
       name: "Commit all changes",
-      hotkeys: [{ modifiers: ["Mod", "Shift"], key: "C" }],
       callback: () => void this.commitOnly(),
     });
 
@@ -420,7 +418,8 @@ export default class GitPocketPlugin extends Plugin {
   }
 
   async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    const stored = (await this.loadData()) as Partial<GitPocketSettings> | null;
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, stored ?? {});
   }
 
   async saveSettings() {

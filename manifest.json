@@ -1,8 +1,8 @@
 {
   "id": "git-pocket",
   "name": "Git Pocket",
-  "version": "0.1.0",
-  "minAppVersion": "1.5.0",
+  "version": "0.2.0",
+  "minAppVersion": "1.13.0",
   "description": "Commit, squash and sync your vault with GitHub from desktop or phone. Real git via isomorphic-git, no shell required.",
   "author": "Anurag Verma",
   "authorUrl": "https://github.com/deauthe",

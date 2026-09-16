@@ -1,11 +1,14 @@
 import type { DataAdapter } from "obsidian";
 
-function err(code: string, syscall: string, path: string): NodeJS.ErrnoException {
-  const e = new Error(`${code}: ${syscall} '${path}'`) as NodeJS.ErrnoException;
-  e.code = code;
-  e.syscall = syscall;
-  e.path = path;
-  return e;
+/** The shape isomorphic-git checks for; `code` is the only field it branches on. */
+interface PosixError extends Error {
+  code: string;
+  syscall: string;
+  path: string;
+}
+
+function err(code: string, syscall: string, path: string): PosixError {
+  return Object.assign(new Error(`${code}: ${syscall} '${path}'`), { code, syscall, path });
 }
 
 function rel(path: string): string {

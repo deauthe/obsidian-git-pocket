@@ -183,7 +183,7 @@ export class GitService {
     }
     let base: string | null = null;
     try {
-      const bases = await git.findMergeBase({ ...this.base(), oids: [localOid, remoteOid] });
+      const bases: string[] = await git.findMergeBase({ ...this.base(), oids: [localOid, remoteOid] });
       base = bases[0] ?? null;
     } catch {
       base = null;
@@ -286,7 +286,7 @@ export class GitService {
     let stop: string | null = remoteOid;
     if (remoteOid && remoteOid !== localOid) {
       try {
-        const bases = await git.findMergeBase({ ...this.base(), oids: [localOid, remoteOid] });
+        const bases: string[] = await git.findMergeBase({ ...this.base(), oids: [localOid, remoteOid] });
         stop = bases[0] ?? remoteOid;
       } catch {
         stop = remoteOid;

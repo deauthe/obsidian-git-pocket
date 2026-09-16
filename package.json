@@ -1,6 +1,6 @@
 {
   "name": "obsidian-git-pocket",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Git for Obsidian that is actually usable on a phone.",
   "main": "main.js",
   "private": true,
@@ -14,7 +14,6 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^24.0.0",
-    "builtin-modules": "^5.0.0",
     "esbuild": "^0.25.0",
     "obsidian": "latest",
     "typescript": "^5.7.0"
