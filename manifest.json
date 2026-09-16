@@ -1,0 +1,9 @@
+{
+  "id": "git-pocket",
+  "name": "Git Pocket",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Commit, squash and sync your vault with GitHub — from desktop or phone. Pure JS git, no shell required.",
+  "author": "anurag",
+  "isDesktopOnly": false
+}

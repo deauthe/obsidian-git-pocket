@@ -1,0 +1,88 @@
+.git-pocket-modal { --gp-gap: 10px; }
+.git-pocket-modal .git-pocket-sub {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  margin-top: -4px;
+}
+.git-pocket-actions {
+  display: flex;
+  gap: var(--gp-gap);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  position: sticky;
+  bottom: 0;
+  padding-top: 10px;
+  background: var(--modal-background);
+}
+.git-pocket-actions button { min-height: 40px; padding: 0 14px; }
+
+.git-pocket-days { max-height: 55vh; overflow-y: auto; margin: 8px -4px; padding: 0 4px; }
+.git-pocket-day { margin-bottom: 18px; }
+.git-pocket-day-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  position: sticky; top: 0; z-index: 1;
+  background: var(--modal-background);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.git-pocket-day-label { font-weight: 600; }
+.git-pocket-day-count { color: var(--text-muted); font-size: var(--font-ui-smaller); margin-left: 6px; }
+.git-pocket-day-toggle {
+  min-height: 34px; padding: 0 12px;
+  font-size: var(--font-ui-smaller);
+}
+
+.git-pocket-commit { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; }
+.git-pocket-commit.is-folded { opacity: 0.5; }
+.git-pocket-check { width: 22px; height: 22px; margin-top: 8px; flex: 0 0 auto; }
+.git-pocket-commit-body { flex: 1 1 auto; min-width: 0; }
+.git-pocket-message { width: 100%; min-height: 38px; font-size: var(--font-ui-small); }
+.git-pocket-meta {
+  color: var(--text-faint);
+  font-size: var(--font-ui-smaller);
+  margin-top: 3px;
+  font-family: var(--font-monospace);
+}
+.git-pocket-summary {
+  margin-top: 6px; padding: 8px 10px;
+  background: var(--background-secondary);
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-small);
+}
+
+.git-pocket-textarea { width: 100%; min-height: 84px; font-size: var(--font-ui-medium); }
+.git-pocket-filelist { max-height: 50vh; overflow-y: auto; }
+.git-pocket-file { display: flex; gap: 8px; align-items: center; padding: 3px 0; }
+.git-pocket-file-badge {
+  width: 20px; text-align: center; border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller); font-weight: 700;
+  background: var(--background-modifier-border);
+}
+.git-pocket-file.is-added .git-pocket-file-badge { color: var(--color-green); }
+.git-pocket-file.is-deleted .git-pocket-file-badge { color: var(--color-red); }
+.git-pocket-file.is-modified .git-pocket-file-badge { color: var(--color-yellow); }
+.git-pocket-file-path {
+  font-family: var(--font-monospace); font-size: var(--font-ui-smaller);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.git-pocket-devicecode {
+  font-family: var(--font-monospace);
+  font-size: 2em; letter-spacing: 0.22em; text-align: center;
+  padding: 18px; margin: 12px 0; cursor: pointer;
+  background: var(--background-secondary); border-radius: var(--radius-m);
+}
+
+.git-pocket-warning {
+  margin-top: 14px; padding: 10px 12px;
+  border-left: 3px solid var(--color-orange);
+  background: var(--background-secondary);
+  font-size: var(--font-ui-smaller); color: var(--text-muted);
+}
+
+.git-pocket-status { cursor: pointer; }
+
+.is-mobile .git-pocket-actions button { flex: 1 1 auto; min-height: 44px; }
+.is-mobile .git-pocket-days { max-height: 48vh; }
+.is-mobile .git-pocket-check { width: 26px; height: 26px; }
