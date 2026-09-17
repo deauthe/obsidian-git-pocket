@@ -4,8 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import git from "isomorphic-git";
 import { nodeAdapter } from "./adapter.mjs";
-import { GitService } from "../build-test/git.js";
-import { planFrom, groupByDay, foldedOids } from "../build-test/ui/squash-modal.js";
+import { GitService, planFrom, groupByDay, foldedOids } from "../build-test/entry.js";
+import { run as runSettings } from "./settings.mjs";
 
 let failures = 0;
 const test = async (name, fn) => {
@@ -133,6 +133,9 @@ console.log("\nrewriteTip against a real repository");
 
   await fsp.rm(root, { recursive: true, force: true });
 }
+
+console.log("\nsettings tab");
+await runSettings(test);
 
 console.log(failures === 0 ? "\nall passed\n" : `\n${failures} FAILED\n`);
 process.exit(failures === 0 ? 0 : 1);

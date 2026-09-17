@@ -91,3 +91,27 @@
 .is-mobile .git-pocket-actions button { flex: 1 1 auto; min-height: 44px; }
 .is-mobile .git-pocket-days { max-height: 48vh; }
 .is-mobile .git-pocket-check { width: 26px; height: 26px; }
+
+/* Action rows in the pre-1.13 fallback renderer, which has no clickable-row
+   affordance of its own. */
+.git-pocket-action-row { cursor: pointer; }
+.git-pocket-action-row:hover { background: var(--background-modifier-hover); }
+.git-pocket-action-row::after {
+  content: "›";
+  color: var(--text-faint);
+  font-size: 1.3em;
+  margin-left: 8px;
+}
+.git-pocket-action-row.is-disabled { opacity: 0.5; cursor: default; }
+.git-pocket-action-row.is-disabled:hover { background: transparent; }
+.git-pocket-slider-value { display: block; margin-top: 2px; color: var(--text-accent); }
+
+.git-pocket-steps { margin: 12px 0; }
+.git-pocket-step { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; }
+.git-pocket-step-mark {
+  width: 20px; text-align: center; font-weight: 700; flex: 0 0 auto;
+}
+.git-pocket-step.is-done .git-pocket-step-mark { color: var(--color-green); }
+.git-pocket-step.is-todo .git-pocket-step-mark { color: var(--text-faint); }
+.git-pocket-step.is-done .git-pocket-step-name { color: var(--text-muted); }
+.git-pocket-step-name { font-weight: 600; }

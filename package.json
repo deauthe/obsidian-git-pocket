@@ -1,13 +1,13 @@
 {
   "name": "obsidian-git-pocket",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Git for Obsidian that is actually usable on a phone.",
   "main": "main.js",
   "private": true,
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-    "test": "esbuild src/git.ts src/ui/squash-modal.ts --bundle --outdir=build-test --format=esm --platform=node --external:isomorphic-git --alias:obsidian=./test/obsidian-stub.mjs --inject:src/shims.ts --log-level=error && node test/run.mjs",
+    "test": "esbuild test/entry.ts --bundle --outfile=build-test/entry.js --format=esm --platform=node --external:isomorphic-git --alias:obsidian=./test/obsidian-stub.mjs --inject:src/shims.ts --log-level=error && node test/run.mjs",
     "install-local": "node scripts/install-local.mjs"
   },
   "keywords": [],

@@ -4,6 +4,9 @@ import {
   Notice,
   PluginSettingTab,
   Setting,
+  type SettingControl,
+  type SettingDefinition,
+  type SettingDefinitionGroup,
   type SettingDefinitionItem,
 } from "obsidian";
 import type GitPocketPlugin from "./main";
@@ -101,6 +104,7 @@ export class GitPocketSettingTab extends PluginSettingTab {
       this.committingGroup(),
       this.syncingGroup(),
       this.advancedGroup(),
+      this.storageNoteGroup(),
     ];
   }
 
@@ -473,17 +477,139 @@ export class GitPocketSettingTab extends PluginSettingTab {
           desc: "Optional. Set this to your own GitHub OAuth app to get device-code sign-in instead of pasting a token.",
           control: { type: "text", key: "oauthClientId" satisfies Key },
         },
+      ],
+    };
+  }
+
+  private storageNoteGroup(): SettingDefinitionItem {
+    return {
+      type: "group",
+      cls: "git-pocket-warning-row",
+      items: [
         {
           name: "Where your token is stored",
+          desc: "Your token lives in this vault's plugin data, unencrypted — the same place every Obsidian plugin keeps its settings. Use a fine-grained token scoped to the one repository, so a leaked vault costs you that repository and nothing else.",
           searchable: false,
-          render: (setting: Setting) => {
-            setting.settingEl.addClass("git-pocket-warning-row");
-            setting.setDesc(
-              "Your token lives in this vault's plugin data, unencrypted — the same place every Obsidian plugin keeps its settings. Use a fine-grained token scoped to the one repository, so a leaked vault costs you that repository and nothing else.",
-            );
-          },
         },
       ],
     };
   }
+
+  /* ------------------------- pre-1.13 fallback ------------------------- */
+
+  /**
+   * Obsidian below 1.13 knows nothing about getSettingDefinitions and calls
+   * this instead. It walks the SAME definitions rather than restating them:
+   * two renderers over one source, not two copies of the settings.
+   *
+   * Deleting this was the bug that shipped in 0.2.0 — minAppVersion gates the
+   * community browser, not a sideloaded plugin, so on 1.7.7 the tab loaded and
+   * rendered nothing at all, leaving no way to sign in.
+   */
+  display(): void {
+    const { containerEl } = this;
+    containerEl.empty();
+    containerEl.addClass("git-pocket-settings");
+    for (const item of this.getSettingDefinitions()) this.renderItem(containerEl, item);
+  }
+
+  private renderItem(root: HTMLElement, item: SettingDefinitionItem): void {
+    if ("type" in item && (item.type === "group" || item.type === "list")) {
+      const group = item as SettingDefinitionGroup;
+      if (!resolve(group.visible, true)) return;
+      const host = group.cls ? root.createDiv({ cls: group.cls }) : root;
+      if (group.heading) new Setting(host).setName(group.heading).setHeading();
+      for (const child of group.items ?? []) this.renderItem(host, child as SettingDefinitionItem);
+      return;
+    }
+
+    const def = item as SettingDefinition;
+    if (!resolve(def.visible, true)) return;
+
+    const setting = new Setting(root).setName(def.name);
+    if (def.desc) setting.setDesc(def.desc);
+
+    if ("control" in def && def.control) {
+      this.renderControl(setting, def.control);
+      return;
+    }
+    if ("action" in def && def.action) {
+      const disabled = resolve(def.disabled, false);
+      const el = setting.settingEl;
+      el.addClass("git-pocket-action-row");
+      if (disabled) {
+        el.addClass("is-disabled");
+        return;
+      }
+      el.onClickEvent(() => def.action(el, 0));
+    }
+  }
+
+  private renderControl(setting: Setting, control: SettingControl): void {
+    const disabled = resolve(control.disabled, false);
+    const current = this.getControlValue(control.key);
+    const write = (value: unknown) => void this.setControlValue(control.key, value);
+
+    switch (control.type) {
+      case "toggle":
+        setting.addToggle((t) =>
+          t
+            .setValue(typeof current === "boolean" ? current : Boolean(control.defaultValue))
+            .setDisabled(disabled)
+            .onChange((v) => {
+              write(v);
+              // Some toggles gate another row's disabled state.
+              this.display();
+            }),
+        );
+        break;
+
+      case "text":
+        setting.addText((t) => {
+          if (control.placeholder) t.setPlaceholder(control.placeholder);
+          t.setValue(typeof current === "string" ? current : (control.defaultValue ?? ""))
+            .setDisabled(disabled)
+            .onChange((v) => write(v));
+        });
+        break;
+
+      case "textarea":
+        setting.addTextArea((t) => {
+          if (control.placeholder) t.setPlaceholder(control.placeholder);
+          t.setValue(typeof current === "string" ? current : (control.defaultValue ?? ""))
+            .setDisabled(disabled)
+            .onChange((v) => write(v));
+        });
+        break;
+
+      case "slider": {
+        const format = control.displayFormat ?? ((v: number) => String(v));
+        const value = typeof current === "number" ? current : (control.defaultValue ?? control.min);
+        // 1.13 shows the value inline; below that it has to be drawn, and
+        // setDynamicTooltip is deprecated so it cannot be borrowed.
+        const readout = setting.descEl.createSpan({ cls: "git-pocket-slider-value" });
+        readout.setText(format(value));
+        setting.addSlider((sl) =>
+          sl
+            .setLimits(control.min, control.max, control.step)
+            .setValue(value)
+            .setDisabled(disabled)
+            .onChange((v) => {
+              readout.setText(format(v));
+              write(v);
+            }),
+        );
+        break;
+      }
+
+      default:
+        // No other control kind is used by this plugin's definitions.
+        break;
+    }
+  }
+}
+
+function resolve(value: boolean | (() => boolean) | undefined, fallback: boolean): boolean {
+  if (value === undefined) return fallback;
+  return typeof value === "function" ? value() : value;
 }

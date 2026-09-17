@@ -4,6 +4,7 @@ import { GitPocketSettingTab } from "./settings-tab";
 import { GitService, type CommitRow } from "./git";
 import { SquashModal } from "./ui/squash-modal";
 import { ChangesModal, ConfirmModal, TextPromptModal } from "./ui/modals";
+import { SetupModal, openPluginSettings } from "./ui/setup-modal";
 
 export default class GitPocketPlugin extends Plugin {
   settings!: GitPocketSettings;
@@ -146,11 +147,14 @@ export default class GitPocketPlugin extends Plugin {
     this.addCommand({
       id: "push",
       name: "Push",
-      callback: () => void this.guard(async () => {
+      callback: () => void (async () => {
+        if (!(await this.requireSetup())) return;
+        await this.guard(async () => {
         await this.git.push(this.settings.remote, this.settings.branch, false, (p) => this.setStatus(p));
         new Notice("Pushed.");
         await this.refreshStatus();
-      }),
+        });
+      })(),
     });
 
     this.addCommand({
@@ -162,20 +166,24 @@ export default class GitPocketPlugin extends Plugin {
     this.addCommand({
       id: "changes",
       name: "Show uncommitted changes",
-      callback: () => void this.guard(async () => {
+      callback: () => void (async () => {
+        if (!(await this.requireSetup())) return;
+        await this.guard(async () => {
         const files = await this.git.changedFiles();
         if (files.length === 0) {
           new Notice("Nothing has changed.");
           return;
         }
         new ChangesModal(this.app, files, () => void this.commitOnly()).open();
-      }),
+        });
+      })(),
     });
   }
 
   /* ------------------------------ actions ------------------------------ */
 
   async commitOnly(prompt = false): Promise<boolean> {
+    if (!(await this.requireSetup())) return false;
     return this.guard(async () => {
       const files = await this.git.changedFiles();
       if (files.length === 0) {
@@ -217,6 +225,7 @@ export default class GitPocketPlugin extends Plugin {
   }
 
   private async doPull() {
+    if (!(await this.requireSetup())) return;
     await this.guard(async () => {
       const dirty = await this.git.changedFiles();
       if (dirty.length > 0) {
@@ -253,6 +262,7 @@ export default class GitPocketPlugin extends Plugin {
   }
 
   async openSquash() {
+    if (!(await this.requireSetup())) return;
     await this.guard(async () => {
       const commits = await this.git.unpushed(this.settings.remote, this.settings.branch);
       if (commits.length === 0) {
@@ -317,10 +327,7 @@ export default class GitPocketPlugin extends Plugin {
 
   /** commit → pull → (squash) → push. The one button that does the right thing. */
   async sync(interactive: boolean) {
-    if (!this.configured()) {
-      new Notice("Git Pocket: sign in and pick a repository first.");
-      return;
-    }
+    if (!(await this.requireSetup())) return;
     await this.guard(async () => {
       const files = await this.git.changedFiles();
       if (files.length > 0) {
@@ -363,6 +370,23 @@ export default class GitPocketPlugin extends Plugin {
 
   /* ------------------------------ plumbing ------------------------------ */
 
+  /**
+   * The single gate in front of every action. It offers the setup it is missing
+   * rather than reporting it: a refusal with no way to act on it is how somebody
+   * ends up staring at "sign in first" with no idea where to sign in.
+   */
+  async requireSetup(): Promise<boolean> {
+    const signedIn = this.settings.token.length > 0 && this.settings.githubLogin.length > 0;
+    const repoPicked = this.settings.repo.length > 0;
+    const repoInitialised = await this.git.hasGitDir();
+    if (signedIn && repoPicked && repoInitialised) return true;
+
+    new SetupModal(this.app, { signedIn, repoPicked, repoInitialised }, () =>
+      openPluginSettings(this.app, this.manifest.id),
+    ).open();
+    return false;
+  }
+
   configured(): boolean {
     return this.settings.token.length > 0 && this.settings.repo.length > 0;
   }
@@ -387,6 +411,8 @@ export default class GitPocketPlugin extends Plugin {
       return false;
     } finally {
       this.busy = false;
+      // Whatever phase word the run left behind is now a lie; the counts are not.
+      void this.refreshStatus();
     }
   }
 
