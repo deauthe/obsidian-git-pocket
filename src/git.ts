@@ -67,20 +67,6 @@ export class GitService {
     this.cache = {};
   }
 
-  async isRepo(): Promise<boolean> {
-    try {
-      await git.resolveRef({ ...this.base(), ref: "HEAD", depth: 1 });
-      return true;
-    } catch {
-      try {
-        await git.findRoot({ fs: this.fs, filepath: this.dir });
-        return true;
-      } catch {
-        return false;
-      }
-    }
-  }
-
   async hasGitDir(): Promise<boolean> {
     try {
       await this.fs.stat("/.git");
@@ -97,19 +83,6 @@ export class GitService {
 
   async setRemote(remote: string, url: string): Promise<void> {
     await git.addRemote({ ...this.base(), remote, url, force: true });
-  }
-
-  async getRemoteUrl(remote: string): Promise<string | null> {
-    const remotes = await git.listRemotes(this.base());
-    return remotes.find((r) => r.remote === remote)?.url ?? null;
-  }
-
-  async currentBranch(): Promise<string | null> {
-    return (await git.currentBranch({ ...this.base(), fullname: false })) ?? null;
-  }
-
-  async listBranches(): Promise<string[]> {
-    return git.listBranches(this.base());
   }
 
   /* ------------------------------ status ------------------------------ */
@@ -181,16 +154,24 @@ export class GitService {
     if (localOid === remoteOid) {
       return { ahead: 0, behind: 0, base: localOid, localOid, remoteOid };
     }
-    let base: string | null = null;
-    try {
-      const bases: string[] = await git.findMergeBase({ ...this.base(), oids: [localOid, remoteOid] });
-      base = bases[0] ?? null;
-    } catch {
-      base = null;
-    }
+    const base = await this.mergeBase(localOid, remoteOid);
     const ahead = base ? await this.countTo(localOid, base) : 0;
     const behind = base ? await this.countTo(remoteOid, base) : 0;
     return { ahead, behind, base, localOid, remoteOid };
+  }
+
+  /**
+   * isomorphic-git declares findMergeBase as `Promise<any[]>`, so this is the
+   * single place that untyped boundary is crossed. Both callers want the same
+   * thing — one oid or nothing — and both treat a failure as "no common base".
+   */
+  private async mergeBase(a: string, b: string): Promise<string | null> {
+    try {
+      const bases = (await git.findMergeBase({ ...this.base(), oids: [a, b] })) as string[];
+      return bases[0] ?? null;
+    } catch {
+      return null;
+    }
   }
 
   private async tryResolve(ref: string): Promise<string | null> {
@@ -285,12 +266,7 @@ export class GitService {
 
     let stop: string | null = remoteOid;
     if (remoteOid && remoteOid !== localOid) {
-      try {
-        const bases: string[] = await git.findMergeBase({ ...this.base(), oids: [localOid, remoteOid] });
-        stop = bases[0] ?? remoteOid;
-      } catch {
-        stop = remoteOid;
-      }
+      stop = (await this.mergeBase(localOid, remoteOid)) ?? remoteOid;
     }
 
     const log = await this.log(branch, 300);

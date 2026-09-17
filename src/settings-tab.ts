@@ -17,7 +17,7 @@ import {
 } from "./github";
 import { ConfirmModal, DeviceCodeModal, RepoPickerModal } from "./ui/modals";
 
-type Key = keyof GitPocketSettings & string;
+type Key = keyof GitPocketSettings;
 
 interface AppSettingLike {
   open(): void;

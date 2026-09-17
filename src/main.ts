@@ -411,7 +411,6 @@ export default class GitPocketPlugin extends Plugin {
       if (d.ahead) bits.push(`${d.ahead}↑`);
       if (d.behind) bits.push(`${d.behind}↓`);
       this.setStatus(bits.length ? `git ${bits.join(" ")}` : "git ✓");
-      this.settings.lastSyncedAt = Date.now();
     } catch {
       this.setStatus("git ?");
     }

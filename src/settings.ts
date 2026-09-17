@@ -29,7 +29,6 @@ export interface GitPocketSettings {
   /** Sync when the app goes to the background / the window loses focus. */
   syncOnBlur: boolean;
 
-  lineWidthWarning: boolean;
   showStatusBar: boolean;
   /** Device label, used by {{device}} in the message template. */
   deviceName: string;
@@ -37,7 +36,6 @@ export interface GitPocketSettings {
   /** Advanced: your own OAuth app, for device-flow login. */
   oauthClientId: string;
 
-  lastSyncedAt: number;
 }
 
 export const DEFAULT_SETTINGS: GitPocketSettings = {
@@ -56,11 +54,9 @@ export const DEFAULT_SETTINGS: GitPocketSettings = {
   squashSelectDaysByDefault: true,
   autoSyncMinutes: 0,
   syncOnBlur: false,
-  lineWidthWarning: true,
   showStatusBar: true,
   deviceName: "",
   oauthClientId: "",
-  lastSyncedAt: 0,
 };
 
 export function renderTemplate(
