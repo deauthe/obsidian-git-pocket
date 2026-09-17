@@ -175,7 +175,7 @@ export default class GitPocketPlugin extends Plugin {
 
   /* ------------------------------ actions ------------------------------ */
 
-  private async commitOnly(prompt = false): Promise<boolean> {
+  async commitOnly(prompt = false): Promise<boolean> {
     return this.guard(async () => {
       const files = await this.git.changedFiles();
       if (files.length === 0) {
@@ -252,7 +252,7 @@ export default class GitPocketPlugin extends Plugin {
     );
   }
 
-  private async openSquash() {
+  async openSquash() {
     await this.guard(async () => {
       const commits = await this.git.unpushed(this.settings.remote, this.settings.branch);
       if (commits.length === 0) {

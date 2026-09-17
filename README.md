@@ -7,11 +7,15 @@ No shell, no Node, no Working Copy hand-off.
 
 ## What it does
 
+- **Run it from settings.** Sync now, Commit all changes, and the squash sheet
+  are rows at the top of the settings tab, not just palette commands.
 - **Sign in to GitHub** with a fine-grained token (one tap to the token page, paste
   it back), or with OAuth device login if you point it at your own OAuth app.
 - **Pick the repository** from a searchable list of everything you can push to.
-- **One shortcut to commit** (`Cmd/Ctrl+Shift+C`) and one to sync
-  (`Cmd/Ctrl+Shift+S`), both rebindable from the settings tab.
+- **Commit and sync commands** you can bind to any key. No default hotkeys ship,
+  so nothing of yours is overridden; the settings tab opens Obsidian's Hotkeys
+  pane filtered to this plugin. (Obsidian owns key binding — no plugin can
+  offer a binder inside its own settings.)
 - **A default commit message** with placeholders — `{{date}} {{time}} {{count}}
   {{files}} {{file}} {{device}}`.
 - **Squash before pushing.** Unpushed commits are grouped by day; each day has a

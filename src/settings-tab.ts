@@ -95,6 +95,7 @@ export class GitPocketSettingTab extends PluginSettingTab {
    */
   getSettingDefinitions(): SettingDefinitionItem[] {
     return [
+      this.actionsGroup(),
       this.accountGroup(),
       this.repositoryGroup(),
       this.committingGroup(),
@@ -112,6 +113,41 @@ export class GitPocketSettingTab extends PluginSettingTab {
   async setControlValue(key: string, value: unknown): Promise<void> {
     (this.plugin.settings as unknown as Record<string, unknown>)[key] = value;
     await this.plugin.saveSettings();
+  }
+
+  /* ------------------------------- actions ------------------------------- */
+
+  /**
+   * The same three things the command palette offers, as rows.
+   * On a phone the palette is a long press away and the status bar is hidden
+   * entirely, so settings is the one surface that is always two taps deep.
+   */
+  private actionsGroup(): SettingDefinitionItem {
+    const ready = () => this.plugin.configured();
+    return {
+      type: "group",
+      heading: "Actions",
+      items: [
+        {
+          name: "Sync now",
+          desc: "Commit everything that changed, pull, then push.",
+          disabled: () => !ready(),
+          action: () => void this.plugin.sync(true),
+        },
+        {
+          name: "Commit all changes",
+          desc: "Commit without touching the remote.",
+          disabled: () => !ready(),
+          action: () => void this.plugin.commitOnly(),
+        },
+        {
+          name: "Squash and rename unpushed commits",
+          desc: "Open the day-grouped tidy-up sheet.",
+          disabled: () => !ready(),
+          action: () => void this.plugin.openSquash(),
+        },
+      ],
+    };
   }
 
   /* ------------------------------- account ------------------------------- */
@@ -312,7 +348,7 @@ export class GitPocketSettingTab extends PluginSettingTab {
         },
         {
           name: "Shortcuts",
-          desc: "Git Pocket ships no default hotkeys, so it can never collide with yours. Bind Commit and Sync here.",
+          desc: "Obsidian owns key binding, so it cannot be done from here. This opens the Hotkeys pane filtered to Git Pocket — no default keys are shipped, so nothing of yours is ever overridden.",
           action: () => this.openHotkeys(),
         },
         {
